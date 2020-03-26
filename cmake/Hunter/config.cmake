@@ -37,6 +37,6 @@ hunter_config(
 
 hunter_config(
     SQLiteModernCpp
-    URL https://github.com/soramitsu/libp2p-sqlite-modern-cpp/archive/fc3b700064cb57ab6b598c9bc7a12b2842f78da2.zip
-    SHA1 d913f2a0360892a30bc7cd8820a0475800b47d76
+    URL https://github.com/soramitsu/libp2p-sqlite-modern-cpp/archive/755491460fab5b0938df2ac00dd018ab069b285e.zip
+    SHA1 34e3e99f93301101006ce51300553fe937c51bc5
 )
