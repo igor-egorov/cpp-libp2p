@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-add_proto_library(p2p_plaintext_proto
+add_proto_library_p2p(p2p_plaintext_proto
     plaintext.proto
     )
 target_link_libraries(p2p_plaintext_proto

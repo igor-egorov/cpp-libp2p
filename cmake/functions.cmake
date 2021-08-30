@@ -45,7 +45,7 @@ function(add_flag flag)
   endif ()
 endfunction()
 
-function(compile_proto_to_cpp PROTO_LIBRARY_NAME PB_H PB_CC PROTO)
+function(compile_proto_to_cpp_libp2p PROTO_LIBRARY_NAME PB_H PB_CC PROTO)
   if (NOT Protobuf_INCLUDE_DIR)
     get_target_property(Protobuf_INCLUDE_DIR protobuf::libprotobuf INTERFACE_INCLUDE_DIRECTORIES)
   endif()
@@ -63,7 +63,7 @@ function(compile_proto_to_cpp PROTO_LIBRARY_NAME PB_H PB_CC PROTO)
 
   get_filename_component(PROTO_ABS "${PROTO}" ABSOLUTE)
   # get relative (to CMAKE_BINARY_DIR) path of current proto file
-  file(RELATIVE_PATH SCHEMA_REL "${CMAKE_BINARY_DIR}/src" "${CMAKE_CURRENT_BINARY_DIR}")
+  file(RELATIVE_PATH SCHEMA_REL "${CMAKE_BINARY_DIR}/libs/libp2p/src" "${CMAKE_CURRENT_BINARY_DIR}")
 
   set(SCHEMA_OUT_DIR ${CMAKE_BINARY_DIR}/pb/${PROTO_LIBRARY_NAME}/generated)
   file(MAKE_DIRECTORY ${SCHEMA_OUT_DIR})
@@ -92,18 +92,20 @@ function(compile_proto_to_cpp PROTO_LIBRARY_NAME PB_H PB_CC PROTO)
   set(${PB_CC} ${SCHEMA_OUT_DIR}/${SCHEMA_REL}/${GEN_PB} PARENT_SCOPE)
 endfunction()
 
-add_custom_target(generated
-    COMMENT "Building generated files..."
-    )
+if (NOT TARGET generated)
+  add_custom_target(generated
+      COMMENT "Building generated files..."
+      )
+endif()
 
-function(add_proto_library NAME)
+function(add_proto_library_p2p NAME)
   set(SOURCES "")
   foreach (PROTO IN ITEMS ${ARGN})
-    compile_proto_to_cpp(${NAME} H C ${PROTO})
+    compile_proto_to_cpp_libp2p(${NAME} H C ${PROTO})
     list(APPEND SOURCES ${H} ${C})
   endforeach ()
 
-  add_library(${NAME}
+  libp2p_add_library(${NAME}
       ${SOURCES}
       )
   target_link_libraries(${NAME}
@@ -117,7 +119,7 @@ function(add_proto_library NAME)
       )
 
   disable_clang_tidy(${NAME})
-  libp2p_install(${NAME})
+  # libp2p_install(${NAME})
 
   add_dependencies(generated ${NAME})
 endfunction()

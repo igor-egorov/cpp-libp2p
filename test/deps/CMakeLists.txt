@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-addtest(outcome_test outcome_test.cpp)
-target_link_libraries(outcome_test
+addtest(p2p_outcome_test outcome_test.cpp)
+target_link_libraries(p2p_outcome_test
     Boost::boost
     )
 
-addtest(di_test di_test.cpp)
-target_link_libraries(di_test
+addtest(p2p_di_test di_test.cpp)
+target_link_libraries(p2p_di_test
     Boost::Boost.DI
     )

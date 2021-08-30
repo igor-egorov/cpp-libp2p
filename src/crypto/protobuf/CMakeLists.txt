@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-add_proto_library(p2p_keys_proto
+add_proto_library_p2p(p2p_keys_proto
     keys.proto
     )
+# libp2p_install(p2p_keys_proto)

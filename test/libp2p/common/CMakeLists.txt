@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 ##
 
-addtest(hexutil_test
+addtest(p2p_hexutil_test
     hexutil_test.cpp
     )
-target_link_libraries(hexutil_test
+target_link_libraries(p2p_hexutil_test
     p2p_hexutil
     p2p_literals
     )
