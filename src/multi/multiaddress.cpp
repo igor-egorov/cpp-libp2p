@@ -14,7 +14,12 @@
 #include <boost/algorithm/string/split.hpp>
 #include <libp2p/multi/converters/converter_utils.hpp>
 
+#include <sys/syscall.h>
+#include <unistd.h>
+
 using std::string_literals::operator""s;
+
+thread_local const int kTid = syscall(SYS_gettid);
 
 namespace {
 
@@ -89,6 +94,7 @@ namespace libp2p::multi {
       : stringified_address_{std::move(address)}, bytes_{std::move(bytes)} {}
 
   void Multiaddress::encapsulate(const Multiaddress &address) {
+    VerifyThreadAccess();
     stringified_address_ += address.stringified_address_;
 
     const auto &other_bytes = address.bytes_;
@@ -96,11 +102,13 @@ namespace libp2p::multi {
   }
 
   bool Multiaddress::decapsulate(const Multiaddress &address) {
+    VerifyThreadAccess();
     return decapsulateStringFromAddress(address.stringified_address_,
                                         address.bytes_);
   }
 
   bool Multiaddress::decapsulate(Protocol::Code proto, std::string address) {
+    VerifyThreadAccess();
     auto p = ProtocolList::get(proto);
     if (p == nullptr) {
       return false;
@@ -120,6 +128,7 @@ namespace libp2p::multi {
 
   std::pair<Multiaddress, boost::optional<Multiaddress>>
   Multiaddress::splitFirst() const {
+    VerifyThreadAccess();
     auto second_slash = stringified_address_.find('/', 1);
     if (second_slash == std::string::npos) {
       return {*this, boost::none};
@@ -156,14 +165,17 @@ namespace libp2p::multi {
   }
 
   std::string_view Multiaddress::getStringAddress() const {
+    VerifyThreadAccess();
     return stringified_address_;
   }
 
   const Multiaddress::ByteBuffer &Multiaddress::getBytesAddress() const {
+    VerifyThreadAccess();
     return bytes_;
   }
 
   boost::optional<std::string> Multiaddress::getPeerId() const {
+    VerifyThreadAccess();
     auto peer_id = getValuesForProtocol(Protocol::Code::P2P);
     if (peer_id.empty()) {
       return {};
@@ -173,6 +185,7 @@ namespace libp2p::multi {
 
   std::vector<std::string> Multiaddress::getValuesForProtocol(
       Protocol::Code proto) const {
+    VerifyThreadAccess();
     std::vector<std::string> values;
     auto protocol = ProtocolList::get(proto);
     if (protocol == nullptr) {
@@ -200,6 +213,7 @@ namespace libp2p::multi {
   }
 
   std::list<Protocol> Multiaddress::getProtocols() const {
+    VerifyThreadAccess();
     std::string_view addr{stringified_address_};
     addr.remove_prefix(1);
 
@@ -219,6 +233,7 @@ namespace libp2p::multi {
 
   std::vector<std::pair<Protocol, std::string>>
   Multiaddress::getProtocolsWithValues() const {
+    VerifyThreadAccess();
     std::string_view addr{stringified_address_};
     addr.remove_prefix(1);
     if (addr.back() == '/') {
@@ -246,12 +261,14 @@ namespace libp2p::multi {
   }
 
   bool Multiaddress::operator==(const Multiaddress &other) const {
+    VerifyThreadAccess();
     return this->stringified_address_ == other.stringified_address_
         && this->bytes_ == other.bytes_;
   }
 
   outcome::result<std::string> Multiaddress::getFirstValueForProtocol(
       Protocol::Code proto) const {
+    VerifyThreadAccess();
     // TODO(@warchant): refactor it to be more performant. this isn't best
     // solution
     auto vec = getValuesForProtocol(proto);
@@ -263,10 +280,12 @@ namespace libp2p::multi {
   }
 
   bool Multiaddress::operator<(const Multiaddress &other) const {
+    VerifyThreadAccess();
     return this->stringified_address_ < other.stringified_address_;
   }
 
   bool Multiaddress::hasProtocol(Protocol::Code code) const {
+    VerifyThreadAccess();
     auto p = ProtocolList::get(code);
     if (p == nullptr) {
       return false;
@@ -280,6 +299,13 @@ namespace libp2p::multi {
     }
     auto str = '/' + std::string(p->name) + '/';
     return this->stringified_address_.find(str) != std::string::npos;
+  }
+
+  void Multiaddress::VerifyThreadAccess() const {
+    threads_.emplace(kTid);
+    if (threads_.size() > 1) {
+      throw threads_.size();
+    }
   }
 
 }  // namespace libp2p::multi

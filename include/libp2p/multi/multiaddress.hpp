@@ -12,6 +12,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <set>
 
 #include <boost/optional.hpp>
 #include <libp2p/common/types.hpp>
@@ -165,6 +166,7 @@ namespace libp2p::multi {
     outcome::result<T> getFirstValueForProtocol(
         Protocol::Code protocol,
         std::function<T(const std::string &)> caster) const {
+      VerifyThreadAccess();
       OUTCOME_TRY(val, getFirstValueForProtocol(protocol));
 
       try {
@@ -189,10 +191,13 @@ namespace libp2p::multi {
     bool decapsulateStringFromAddress(std::string_view proto,
                                       const ByteBuffer &bytes);
 
+    void VerifyThreadAccess() const;
+
     std::string stringified_address_;
     ByteBuffer bytes_;
 
     boost::optional<std::string> peer_id_;
+    mutable std::set<int> threads_{};
   };
 
   inline auto format_as(const Multiaddress &ma) {
