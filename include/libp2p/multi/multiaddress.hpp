@@ -12,6 +12,8 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <mutex>
+#include <shared_mutex>
 
 #include <boost/optional.hpp>
 #include <libp2p/common/types.hpp>
@@ -193,6 +195,7 @@ namespace libp2p::multi {
     ByteBuffer bytes_;
 
     boost::optional<std::string> peer_id_;
+    mutable std::shared_ptr<std::shared_mutex> mutex_;
   };
 
   inline auto format_as(const Multiaddress &ma) {

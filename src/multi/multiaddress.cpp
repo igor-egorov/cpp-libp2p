@@ -86,9 +86,12 @@ namespace libp2p::multi {
   }
 
   Multiaddress::Multiaddress(std::string &&address, ByteBuffer &&bytes)
-      : stringified_address_{std::move(address)}, bytes_{std::move(bytes)} {}
+      : stringified_address_{std::move(address)},
+        bytes_{std::move(bytes)},
+        mutex_{std::make_unique<std::shared_mutex>()} {}
 
   void Multiaddress::encapsulate(const Multiaddress &address) {
+    std::unique_lock lock(*mutex_);
     stringified_address_ += address.stringified_address_;
 
     const auto &other_bytes = address.bytes_;
@@ -120,6 +123,7 @@ namespace libp2p::multi {
 
   std::pair<Multiaddress, boost::optional<Multiaddress>>
   Multiaddress::splitFirst() const {
+    std::shared_lock lock(*mutex_);
     auto second_slash = stringified_address_.find('/', 1);
     if (second_slash == std::string::npos) {
       return {*this, boost::none};
@@ -138,6 +142,7 @@ namespace libp2p::multi {
 
   bool Multiaddress::decapsulateStringFromAddress(std::string_view proto,
                                                   const ByteBuffer &bytes) {
+    std::unique_lock lock(*mutex_);
     auto str_pos = stringified_address_.rfind(proto);
     if (str_pos == std::string::npos) {
       return false;
@@ -156,6 +161,7 @@ namespace libp2p::multi {
   }
 
   std::string_view Multiaddress::getStringAddress() const {
+    std::shared_lock lock(*mutex_);
     return stringified_address_;
   }
 
@@ -173,6 +179,7 @@ namespace libp2p::multi {
 
   std::vector<std::string> Multiaddress::getValuesForProtocol(
       Protocol::Code proto) const {
+    std::shared_lock lock(*mutex_);
     std::vector<std::string> values;
     auto protocol = ProtocolList::get(proto);
     if (protocol == nullptr) {
@@ -200,6 +207,7 @@ namespace libp2p::multi {
   }
 
   std::list<Protocol> Multiaddress::getProtocols() const {
+    std::shared_lock lock(*mutex_);
     std::string_view addr{stringified_address_};
     addr.remove_prefix(1);
 
@@ -219,6 +227,7 @@ namespace libp2p::multi {
 
   std::vector<std::pair<Protocol, std::string>>
   Multiaddress::getProtocolsWithValues() const {
+    std::shared_lock lock(*mutex_);
     std::string_view addr{stringified_address_};
     addr.remove_prefix(1);
     if (addr.back() == '/') {
@@ -227,7 +236,7 @@ namespace libp2p::multi {
 
     std::vector<std::string> tokens;
 
-    boost::algorithm::split(tokens, addr, boost::algorithm::is_any_of("/"));
+    boost::algorithm::split(tokens, addr, boost::algorithm::is_any_of("/"));  //
 
     std::vector<std::pair<Protocol, std::string>> pvs;
     for (auto &token : tokens) {
@@ -267,6 +276,7 @@ namespace libp2p::multi {
   }
 
   bool Multiaddress::hasProtocol(Protocol::Code code) const {
+    std::shared_lock lock(*mutex_);
     auto p = ProtocolList::get(code);
     if (p == nullptr) {
       return false;
