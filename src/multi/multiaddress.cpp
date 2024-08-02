@@ -10,6 +10,8 @@
 #include <numeric>
 #include <stdexcept>
 
+#include <iostream>
+
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <libp2p/multi/converters/converter_utils.hpp>
@@ -88,7 +90,13 @@ namespace libp2p::multi {
   Multiaddress::Multiaddress(std::string &&address, ByteBuffer &&bytes)
       : stringified_address_{std::move(address)},
         bytes_{std::move(bytes)},
-        mutex_{std::make_unique<std::shared_mutex>()} {}
+        mutex_{std::make_unique<std::shared_mutex>()} {
+    std::cout << "ma+++ " << this << std::endl;
+  }
+
+  Multiaddress::~Multiaddress() {
+    std::cout << "ma--- " << this << std::endl;
+  }
 
   void Multiaddress::encapsulate(const Multiaddress &address) {
     std::unique_lock lock(*mutex_);
@@ -227,6 +235,7 @@ namespace libp2p::multi {
 
   std::vector<std::pair<Protocol, std::string>>
   Multiaddress::getProtocolsWithValues() const {
+    std::cout << "ma=== " << this << std::endl;
     std::shared_lock lock(*mutex_);
     std::string_view addr{stringified_address_};
     addr.remove_prefix(1);
