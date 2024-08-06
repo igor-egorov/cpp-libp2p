@@ -11,6 +11,7 @@ target_link_libraries(message_read_writer_test
     p2p_message_read_writer
     p2p_protobuf_message_read_writer
     p2p_message_read_writer_error
+    p2p_multiaddress
     p2p_uvarint
     Boost::boost
     )
