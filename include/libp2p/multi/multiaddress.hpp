@@ -38,6 +38,7 @@ namespace libp2p::multi {
     Multiaddress() = delete;
     Multiaddress(const Multiaddress &other);
     Multiaddress(Multiaddress &&other);
+    Multiaddress& operator=(const Multiaddress &other);
     ~Multiaddress();
 
     enum class Error {
@@ -198,7 +199,7 @@ namespace libp2p::multi {
     ByteBuffer bytes_;
 
     boost::optional<std::string> peer_id_;
-    mutable std::shared_ptr<std::shared_mutex> mutex_;
+    // mutable std::shared_ptr<std::shared_mutex> mutex_;
   };
 
   inline auto format_as(const Multiaddress &ma) {
