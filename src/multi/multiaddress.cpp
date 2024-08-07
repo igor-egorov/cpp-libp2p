@@ -11,6 +11,7 @@
 #include <stdexcept>
 
 #include <iostream>
+#include <thread>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -91,11 +92,23 @@ namespace libp2p::multi {
       : stringified_address_{std::move(address)},
         bytes_{std::move(bytes)},
         mutex_{std::make_unique<std::shared_mutex>()} {
-    std::cout << "ma+++ " << this << std::endl;
+    std::cout << "ma+++ " << this << " tid " << std::this_thread::get_id()
+              << std::endl;
+  }
+
+  Multiaddress::Multiaddress(const Multiaddress &other) {
+    std::cout << "ma++c " << this << " tid " << std::this_thread::get_id()
+              << std::endl;
+  }
+
+  Multiaddress::Multiaddress(Multiaddress &&other) {
+    std::cout << "ma++m " << this << " tid " << std::this_thread::get_id()
+              << std::endl;
   }
 
   Multiaddress::~Multiaddress() {
-    std::cout << "ma--- " << this << std::endl;
+    std::cout << "ma--- " << this << " tid " << std::this_thread::get_id()
+              << std::endl;
   }
 
   void Multiaddress::encapsulate(const Multiaddress &address) {
@@ -235,7 +248,8 @@ namespace libp2p::multi {
 
   std::vector<std::pair<Protocol, std::string>>
   Multiaddress::getProtocolsWithValues() const {
-    std::cout << "ma=== " << this << std::endl;
+    std::cout << "ma=== " << this << " tid " << std::this_thread::get_id()
+              << std::endl;
     std::shared_lock lock(*mutex_);
     std::string_view addr{stringified_address_};
     addr.remove_prefix(1);

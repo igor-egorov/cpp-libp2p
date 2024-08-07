@@ -6,6 +6,9 @@
 
 #include <libp2p/protocol/kademlia/impl/get_value_executor.hpp>
 
+#include <iostream>
+#include <thread>
+
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index_container.hpp>
@@ -103,6 +106,7 @@ namespace libp2p::protocol::kademlia {
   };
 
   void GetValueExecutor::spawn() {
+    std::cout << "spawn " << std::this_thread::get_id() << std::endl;
     if (done_) {
       return;
     }

@@ -36,6 +36,8 @@ namespace libp2p::multi {
 
    public:
     Multiaddress() = delete;
+    Multiaddress(const Multiaddress &other);
+    Multiaddress(Multiaddress &&other);
     ~Multiaddress();
 
     enum class Error {
